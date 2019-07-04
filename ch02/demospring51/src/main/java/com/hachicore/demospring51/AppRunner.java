@@ -3,32 +3,40 @@ package com.hachicore.demospring51;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Arrays;
 
 @Component
 public class AppRunner implements ApplicationRunner {
 
     @Autowired
-    ApplicationContext resourceLoader;
+    Validator validator;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        System.out.println(resourceLoader.getClass()); // AnnotationConfigServletWebServerApplicationContext
+        System.out.println(validator.getClass());
 
-        // Resource resource = resourceLoader.getResource("classpath:test.txt");
-        // System.out.println(resource.getClass()); // org.springframework.core.io.ClassPathResource(prefix)
+        Event event = new Event();
+        event.setLimit(-1);
+        event.setEmail("aaa2");
 
-        Resource resource = resourceLoader.getResource("test.txt");
-        System.out.println(resource.getClass()); // org.springframework.web.context.support.ServletContextResource
+        // EventValidator eventValidator = new EventValidator();
+        Errors errors = new BeanPropertyBindingResult(event, "event");
 
-        System.out.println(resource.exists());
-        System.out.println(resource.getDescription());
-        System.out.println(Files.readString(Path.of(resource.getURI())));
+        // eventValidator.validate(event, errors);
+        validator.validate(event, errors);
+
+        System.out.println(errors.hasErrors());
+
+        errors.getAllErrors().forEach(e -> {
+            System.out.println("======== error code ========");
+            Arrays.stream(e.getCodes()).forEach(System.out::println);
+            System.out.println(e.getDefaultMessage());
+        });
     }
 }
